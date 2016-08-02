@@ -17,6 +17,7 @@ with(res.imp,cor(p.pmi,p.imp))
 library(ggplot2)
 library(cowplot)
 
-
+pdf("/Users/oliver/gitr/fyr/pics/pmi_vs_imp.pdf")
 ggplot(res.imp,aes(y=-log10(p.pmi),x=-log10(p.imp))) + 
   geom_hex(bins=100) + theme_bw() + xlab("-log10(p.imputed)") + geom_abline(alpha=0.5)
+dev.off()
