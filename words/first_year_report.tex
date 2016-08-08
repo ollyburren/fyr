@@ -13,6 +13,7 @@
 \usepackage{graphicx}
 \usepackage{amssymb}\usepackage[T1, OT1]{fontenc}
 \usepackage{hyperref}
+\usepackage{subcaption}
 \renewcommand{\dh}{\fontencoding{T1}\selectfont{\symbol{240}}}
 \graphicspath{ {../pics/} }
 
@@ -57,13 +58,15 @@
 
 \section{Motivation}
 
-A key property of the adaptive immune system is the ability to recognise pathogens from self-antigens and dysregulation of this process results in damage to healthy tissues and autoimmunity. At this time over 80 diseases have been found to have an underlying autoimmune pathogenesis, with approximately half presenting as rare diseases~\citep{HayterCook2012}. The health burden of more common autoimmune diseases such as type 1 diabetes (T1D), rheumatoid arthritis (RA), inflammatory bowel disease (IBD) and multiple sclerosis is high with approximately 7 - 9$\%$ of the population affected~\citep{CooperBynumSomers2009}. Although environment is a contributing factor in disease susceptibility, genetic heritability, defined as the proportion of phenotypic variance attributable to genetic variance, is observed ranging from 0.39 in primary billiary cirrhosis (PBC) to 0.9 in ankylosing spondilitis (AS)~\citep{Gutierrez-ArcelusRichRaychaudhuri2016}.  Genome-wide association studies (GWAS) have identified at least 324 distinct genetic loci associated with one or more autoimmune diseases (http://www.immunobase.org). Focus is now drawn to elucidating the mechanisms by which causal variation modulates phenotypic endpoints, a prerequisite for successful therapeutic development. The majority of associated variants fall outside of genes ~\citep{MauranoHumbertRynesEtAl2012} and the integrative analysis of chromatin marks with GWAS highlights a tissue specific specific regulatory role ~\citep{FarhMarsonZhuEtAl2015}.  Recent studies ~\citep{ClaussnitzerDankelKimEtAl2015,SmemoTenaKimEtAl2014,Davison2012-zk} have shown that such regulatory variants might, through chromatin conformation, regulate distal genes. However, further progress in this area has been hampered by incomplete knowledge of causal variants and their target genes and the specific tissue contexts in which they operate~\citep{Albert2015-jn}.
+A key property of the adaptive immune system is the ability to recognise pathogens from self-antigens and dysregulation of this process results in damage to healthy tissues and autoimmunity. At this time over 80 diseases have been found to have an underlying autoimmune pathogenesis, with approximately half presenting as rare diseases~\citep{HayterCook2012}. The health burden of more common autoimmune diseases such as type 1 diabetes (T1D), rheumatoid arthritis (RA), inflammatory bowel disease (IBD) and multiple sclerosis is high with approximately 7 - 9$\%$ of the European population affected~\citep{CooperBynumSomers2009}. Although environment is a contributing factor in disease susceptibility, genetic heritability, defined as the proportion of phenotypic variance attributable to genetic variability, is observed ranging from 0.39 in primary billiary cirrhosis (PBC) to 0.9 in ankylosing spondilitis (AS)~\citep{Gutierrez-ArcelusRichRaychaudhuri2016}.  Genome-wide association studies (GWAS) have identified at least 324 distinct genetic loci associated with one or more autoimmune diseases (http://www.immunobase.org). Focus is now drawn to elucidating the mechanisms by which causal variation modulates phenotypic endpoints, a prerequisite for successful therapeutic development. The majority of associated variants fall outside of genes ~\citep{MauranoHumbertRynesEtAl2012} and the integrative analysis of chromatin marks with GWAS highlights a tissue specific specific regulatory role ~\citep{FarhMarsonZhuEtAl2015}.  Recent studies ~\citep{ClaussnitzerDankelKimEtAl2015,SmemoTenaKimEtAl2014,Davison2012-zk} have shown that such regulatory variants might, through chromatin conformation, regulate distal genes. However, further progress in this area has been hampered by incomplete knowledge of causal variants and their target genes and the specific tissue contexts in which they operate~\citep{Albert2015-jn}.
+
+To date systematic methods for incorporating physical interactions between variants and their target genes have not been attempted. In this report I describe tools and analytical methods to integrate genetic and high resolution promoter capture Hi-C (PCH-C) information to provide data driven approaches to prioritising causal variation for autoimmune susceptibility, the tissue contexts within which it might operate, and the genes and biological pathways which it might peturb. To do this I develop fine mapping, variant set enrichment and pathway analysis methods that use PHi-C data from 17 cell types to analyse GWAS data for 10 autoimmune and for comparison 23 non-autoimmune traits. 
 
 \section{Fine mapping}
 
 Fine mapping is the process of refining association signals in a region in order to characterise fine scale genetic architecture, a necessary step in order to identify putative causal variants. Progress in this area is challenging, due to the presence of linkage disequilibrium (LD), which in many cases means that the causal variation cannot be resolved statistically with current sample sizes.  If raw genotyping data for a study is available then stepwise regression could be used, however this approach whilst computationally tractable doubts exist over it's validity[cite millner]. Effectively having selected a single variant that best explains the variance of a trait, stepwise regression then looks for other variants that explain additional trait variance conditional on this 'top' variant. This is not equivalent to explaining which variants jointly explain the variance of a trait. An alternative approach is to use a stochastic search method that allows for multiple causal variants within a region. One example is GUESSFM that uses a Bayesian evolutionary stochastic search algorithm to effectively sample the model space, which has been shown to have consistently better performance when predictors (SNPs) are highly correlated~\cite{WallaceCutlerPontikosEtAl2015}. 
 
-The drawback of both of these methods is that they require raw genotyping data  which for valid privacy reasons are hard to obtain. One method of fine mapping candidate causal variants  using summary statistics is Wakefield’s synthesis of approximate Bayes factors (ABF)~\citep{Wakefield2009} to compute ABF for each SNP these can then, assuming a single causal variant in a given genetic region, these can be converted into posterior probabilities for a SNP to be causal using methods described in ~\citet{The_Wellcome_Trust_Case_Control_Consortium2012-ad}. 
+The drawback of both of these methods is that they require raw genotyping data  which for valid privacy reasons are hard to obtain. One method of fine mapping candidate causal variants  using summary statistics is Wakefield’s synthesis of approximate Bayes factors (ABF)~\citep{Wakefield2009} to compute ABF for each SNP, assuming a single causal variant in a given genetic region, these can be converted into posterior probabilities for a SNP to be causal using methods described in ~\citet{The_Wellcome_Trust_Case_Control_Consortium2012-ad}. 
 
 \begin{equation}
 	ABF =  \sqrt{1 - r} \times \exp{\left[\frac{Z^{2}}{2} \times r\right]}
@@ -73,52 +76,43 @@ Here if $\hat{\beta}$ is our estimate of the $\log(\text{Odds Ratio})$ and $\sqr
 
 Given the ABF for all SNPs in a given genetic block we can estimate the posterior probability that a SNP $i$  is causal using the following. 
 % add equation here with an explanation
-
 \begin{equation}
+\label{form:bf_derivation}
 \begin{split}
-	PP_{i}& = P(\text{SNP}_{i_{causal}} | D)\\
-	& = \frac{P(D | \text{SNP}_{i_{causal}})\pi_{i}}{\sum_{j}P(D | \text{SNP}_{j_{causal}})\pi_{j} + P(D | H_{0})\pi_0}\\
+	PP_{i}& = P(\text{SNP}_{i}\text{ causal} | D)\\
+	& = \frac{P(D | \text{SNP}_{i} \text{ causal})\pi_{i}}{\sum_{j}P(D | \text{SNP}_{j}\text{causal})\pi_{j} + P(D | H_{0})\pi_0}\\
 	& = \frac{
 				\frac{
-					P(D | \text{SNP}_{i_{causal}})\pi_{i}
+					P(D | \text{SNP}_{i}\text{ causal})
 				}
 				{
-					P(D|H_{0})\pi_0
-				}
+					P(D|H_{0})
+				}\pi_{i}
 		}
 		{
-				\frac{
-					\sum_{j}P(D | \text{SNP}_{j_{causal}})\pi_{j}
+				\sum_{j=1}^n\frac{
+					P(D | \text{SNP}_{j}\text{ causal})
 				}
 				{
-					P(D|H_{0})\pi_{0}
-				}  + \pi_0
+					P(D|H_{0})
+				}\pi_{j}  + \pi_0
 		}	\\
 	& = \frac{
 		\text{BF}_{i}\pi_{i}
 	}
 	{
-	\sum_{j}\text{BF}_{j}\pi_{j} + \pi_{0}
+	\sum_{j=1}^n\text{BF}_{j}\pi_{j} + \pi_{0}
 	} \\	
-	\pi_{0}& = 1-\sum_{j}\pi_{j} \\
-	&\approx 1\\
-	\pi_{j}& = \pi_{i}\\
-	PP_{i}& = \frac{
+	\\
+	& \approx \frac{
 		\text{BF}_{i}\pi_{i}
 	}
 	{
-	\sum_{j}\text{BF}_{j}\pi_{i} + 1
+	\sum_{j=1}^n\text{BF}_{j}\pi_{j} + 1
 	} \\
 \end{split}
 \end{equation}
-
-%
-%	
-%	& =  \frac{\frac{P(D | \text{SNP}_{i_{causal}})\pi_{i}}}{P(D|H_}0})\pi_0}{\frac{\sum_{j}P(D | \text{SNP}_{j_{causal}}\pi_{j}}{P(D|H_{0})\pi_{0}} + \pi_0}	
-%P(1) = \frac{P(\text{data}| \text{SNP}_{i_{causal}})\pi_{i}}{\sum_{j} P(\text{data} | \text{SNP}_{i_{causal}})\pi_{j} + P(\text{no causal}) } \\
-%	PP_{i} = P(\text{SNP}_{i_{causal}} | \text{data}) = \frac{ABF_{i}\pi_{i}}{1 + \sum_{i=1} ABF_{i}\pi_{i}}
-
-$\pi_{i}$ is our prior probability for any SNP selected at random to be causal for a trait. Current sample sizes are underpowered and limit resolution and this has driven the the development of integrative techniques that couple fine mapping methods with functional information to prioritise causal variants, genes and tissue contexts for targeted empirical interrogation. Examples include \textit{fgwas}~\citep{Pickrell2014-xs}, PAINTOR~\citep{KichaevYangLindstromEtAl2014}, RiVIERA~\citep{LiKellis2016}   and the integration of eQTL data sets using Mendelian randomisation~\citep{ZhuZhangHuEtAl2016}. As an example ~\citet{Pickrell2014-xs} use a Bayesian hierarchical frameworks implemented in \textit{fgwas} that estimate variable priors for each SNP based on other sources of annotation. For a given SNP the prior probability for association, $\pi_{ik}$, varies depending on the enrichment of annotations, $\lambda_{l}$. 
+as $\pi_{0} = 1-\sum_{j}\pi_{j} \approx 1$. $\pi_{i}$ is our prior probability for any SNP selected at random to be causal for a trait. As current sample sizes are underpowered and limit resolution and this has driven the the development of integrative techniques that couple fine mapping methods with functional information to further prioritise causal variants. Examples include \textit{fgwas}~\citep{Pickrell2014-xs}, PAINTOR~\citep{KichaevYangLindstromEtAl2014}, RiVIERA~\citep{LiKellis2016}   and the integration of eQTL data sets using Mendelian randomisation~\citep{ZhuZhangHuEtAl2016}. As an example ~\citet{Pickrell2014-xs} develope a Bayesian hierarchical frameworks implemented in \textit{fgwas} that estimates variable priors for each SNP based on other sources of annotation. For a given SNP the prior probability for association, $\pi_{ik}$, varies depending on the enrichment of annotations, $\lambda_{l}$. 
 
 \begin{equation}
 	\pi_{ik} = \frac{e^{x_{i}}}{\sum_{j \in S_k}e^{x_{j}}}
@@ -130,52 +124,54 @@ $x_i$ is the sum of the effect of all the annotations that the $i^{th}$ SNP over
 	x_{i} = \sum_{l=1}^{L_{2}} \lambda_{l}I_{il}
 \end{equation}
 
+$\lambda_{l}$ is itself of interest as it indicates whether a given annotation is enriched for association with a trait of interest. When combined with equation \ref{form:bf_derivation} $p_{ik}$ allows the incorporation of functional information with genetic data allowing a modest increase in resolution and a resultant decrease in the number of causal SNPs to be considered. Whilst promising fgwas requires careful cross-validation to prevent overfitting whereby the derived model is biased for the training set but performs poorly on a test set of data, and all such methods are limited by the annotations available.  
 
- however to date systematic methods for incorporating physical interactions between variants and their target genes have not been attempted.  
+\section{Variant set enrichment}
+Understanding whether variants associated with a trait are enriched for a particular annotation or gene set can provide global information on mechanisms, relevant tissue contexts and biological pathways. However this is complicated by correlation between variants due to LD and between annotations. 
+
+\begin{equation}
+	\text{Var}(A + B) = \text{Var}(A) + \text{Var}(B) + 2\text{Cov}(A,B)
+\end{equation}
+
+If $A$ and $B$ are non independent variables then the covariance term can be almost as large as $\text{Var}(A) + \text{Var}(B)$, in this case the observed variance will inflated compared to the theoretical variance if independence is assumed. Unfortunately most classical statistical tests based on linear sums of variables assume independence and thus the inflated variance of the computed test statistic increases type 1 error, that is the erroneous rejection of the null hypothesis. Permutation based methods, that can use GWAS summary statistcs are desirable as they can help to overcome this inflation by estimating the variance emprically. There are two broad permution methods, firstly using a suitable reference genotype set to compute covariance matrices allows the estimation of SNP variance under the null hypothesis using the multivariate normal~\cite{LiuMcRaeNyholtEtAl2010,Burren2014-vh}. These approaches are computationally expensive and scale exponentially with SNP density, thus an LD pruning strategy is employed which limits applicability to larger genomic annotations such as genes. The second approach is to permute the annotations over the SNPs whilst maintaining the spatial correlation structure of the target annotation to estimate the variance under the null. The latter approach is attractive as it favours high resolution annotations and is computationally more tractable. GOSHIFTER is a recent implementation using a circular permutation strategy ~\citep{Trynka2015-wz} that demonstrates the this approach finding enrichment for H3K4me3 marks in CD$+$ memory T cells. 
+
+As previously mentioned integrative approaches such as \textit{fgwas} combine variant set enrichment with fine mapping strategies to simultaneously prioritise annotations and variants. It should be noted that all methods are dependent on the quality and coverage of input annotations. Indeed a recent study fine mapping IBD causal variants found that 21 variants with extremely high probability ($>$ 95$\%$) to be causal did not overlap any functional annotations, drawing attention to our lack of knowledge of genomic function~\citep{Huang2015-ug}.
 
 %We used a prior ($\pi_{i}$) of $10^{-4}$ which means that we expect 1 in 10,000 SNPs to be causal for a trait
+\section{High resolution promoter capture Hi-C}
+Recently techniques such as Hi-C~\citep{Lieberman-AidenvanBerkumWilliamsEtAl2009} and  Chromatin Interaction Analysis by Paired-End Tag Sequencing (ChIA-PET)~\citep{FullwoodLiuPanEtAl2009} have been developed to map the genome-wide chromatin interactions in specific cell types~\citep{RaoHuntleyDurandEtAl2014}. Hi-C involves cross-linking genomic DNA with formaldehyde resuting in covalent links between spatially adjacent chromatin segments. This chromatin is then digested with a restricition enzyme and sticky ends are filled in with biotin labelled nucleotides. Ligation is then performed under dilute conditions which favours intramolecular ligation events. The DNA is then purified and then sonically sheared and fragments are then enriched for biotinylated junctions, which then undergo paired end sequencing~\citep{vanBerkumLieberman-AidenWilliamsEtAl2010}. ChiA-PET again involves using formaldehyde to covalently link spatially adjacent chromatin. After sonification an immunoprecipitation step is used select a protein of interest (e.g. transcription factor) and the chromain to which it is bound. Next biotin conjugated linker sequences are ligated to the free ends of the immunoprecipitated DNA. A further proximity based ligation takes place with enrichment of biotinylated linkers. Barcodes within the linker sequences are used to resolve chimeric intra and inter complex interactions. 
 
+Whilst both are genome-wide methods for interrogating chromatin looping CHiA-PET targets a specific protein and therefore compared to Hi-C is unable to give an unbiased overview of all chromatin interactions within a given tissue context. However, Hi-C resolution is limited by two main factors. Firstly the protocol involves a restriction enzyme digest, usually \textit{Hind}III, and interactions are called based on the resultant fragments generated, in practice if \textit{Hind}III is is used this limits resolution to approximately 4Kb. Secondly,  the complexity of the sequence libraries generated means that to increase the effective resolution of conventional Hi-C by a factor $n$ requires $n^{2}$ sequencing reads which is prohibitive for general implementation~\citep{JaegerMiglioriniHenrionEtAl2015}. Promoter capture Hi-C (PCHi-C) incorporates a sequence capture extension to classical Hi-C to enrich for chromatin interactions with protein coding gene promoters~\citep{Mifsud2015-fm}. Such PCHi-C allows for increasing resolution in an approximately linear fashion with increased sequence depth allowing for an economically viable approach for identifying promoter interactions. 
 
-
-Recently techniques such as Hi-C~\citep{Lieberman-AidenvanBerkumWilliamsEtAl2009} and ChIA-PET~\citep{FullwoodLiuPanEtAl2009} have been developed to map the genome-wide chromatin interactions in specific cell types~\citep{RaoHuntleyDurandEtAl2014}. However the complexity of the sequence libraries generated means that to increase the effective resolution of conventional Hi-C by a factor $n$ requires $n^{2}$ sequencing reads which is prohibitive for general implementation~\citep{JaegerMiglioriniHenrionEtAl2015}. Promoter capture Hi-C (PCHi-C) incorporates a sequence capture extension to classical Hi-C to enrich for chromatin interactions with protein coding gene promoters~\citep{Mifsud2015-fm}. Such PCHi-C allows for increasing resolution in an approximately linear fashion allowing for an economically viable approach for identifying promoter interactions. 
-
-In this report I describe the development of a mythological framework that can be used to integrate tissue specific PCHi-C interaction maps with both targeted and genome wide genetic studies. Using a set of interaction maps for 17 haematopoietic primary Human cell types and focusing on autoimmunity I use this framework to define lists of prioritised variants, genes and cellular contexts. I show how these can be further refined by using  deep genomic phenotyping of  CD4$^{+}$ T cells  in activated and non-activated states. Finally I discuss followup experiments in \textit{IL2RA} that demonstrate context specific allelic imbalance, that provides validation of this framework.
+%In this report I describe the development of a methodological framework that can be used to integrate tissue specific PCHi-C interaction maps with both targeted and genome wide genetic studies. Using a set of interaction maps for 17 haematopoietic primary Human cell types and focusing on autoimmunity I use this framework to define lists of prioritised variants, genes and cellular contexts. I show how these can be further refined by using  deep genomic phenotyping of  CD4$^{+}$ T cells  in activated and non-activated states. Finally I discuss followup experiments in \textit{IL2RA} that demonstrate context specific allelic imbalance, that provides validation of this framework.
 
 \chapter{Materials and Methods}
 
 \section{Promoter Capture Interaction Maps of 17 Haematopoetic primary human cells}
-Maps of 17 primary human cells of the haematopoetic lineage were generated collaboratively with members of the Fraser, Spivakov, Ouwehand and Diabetes and Inflammation Laboratories. Each cell type was assessed over on average 3 technical replicates (Table \ref{tab:pints}). The bespoke capture platform employed encompassed a total of 22,076 \textit{Hind}III fragments containing 31,253 annotated promoters for 18,202 protein-coding and 10,929 non-protein coding genes (Ensembl v75). Significantly interacting regions were called using the CHiCAGO pipeline~\citep{CairnsFreire-PritchettWingettEtAl2016}. For all downstream analysis interactions with a CHiCAGO score threshold of $\geqslant$ 5 were used in downstream analysis.
+Maps of 17 primary human cells of the haematopoetic lineage were generated collaboratively with members of the Fraser, Spivakov, Ouwehand and Diabetes and Inflammation Laboratories. Each cell type was assessed over on average 3 technical replicates (Table \ref{tab:pints}). The bespoke capture platform employed encompassed a total of 22,076 \textit{Hind}III fragments containing 31,253 annotated promoters for 18,202 protein-coding and 10,929 non-protein coding genes (Ensembl v75). Significantly interacting regions were called using the CHiCAGO pipeline~\citep{CairnsFreire-PritchettWingettEtAl2016}. Interactions with a CHiCAGO score threshold of $\geqslant$ 5 were used in all downstream analysis.
 
 \section{Collection and quality control of GWAS summary statistics from 31 genome wide association studies}
-I downloaded summary statistics from online resources as detailed in Table\ref{tab:gwasm}. Genotyping error can create false associations,  therefore I filtered all association statistics to remove SNPs that significantly deviating from Hardy-Weinberg equilibrium. Furthermore to include only robust associations I removed those SNPs which were genome-wide significant ($5 \times 10^{-8}$) but for which no variants in LD ($r^{2} > 0.6$) were  above $1 \times 10^{-5}$ allowing a 500kb window around the lead SNP. Finally I removed any SNP that was genome-wide significant but was not found in the 1000 Genomes PhaseIII EUR genotype set. 
+I downloaded GWAS summary statistics, covering 8 autoimmune and 23 other traits, from online resources, as detailed in Table\ref{tab:gwasm}. Genotyping error can create false associations,  therefore I filtered all association statistics to include only robust associations by removing those SNPs which were genome-wide significant ($p < 5 \times 10^{-8}$) but for which no variants, within 500Kb, in LD ($r^{2} > 0.6$) with the lead SNP had $p < 1 \times 10^{-5}$. Finally I removed any SNP that was genome-wide significant but was not found in the 1000 Genomes PhaseIII EUR genotype set. 
 %This code is found in gwas_integration/R/QC.R
 \section{Poor Man's Imputation (PMI) - Imputation of GWAS p-values to the 1000 Genome reference panel in the absence of effect size and direction}
-I developed a pipeline that approximates the $p$-value for missing SNP summary statistics for a given study using a suitable reference genotype set. Firstly the genome is split into regions based on a recombination frequency of 0.1cM using HapMap recombination rate data. For each region we retrieve from the reference genotype set (1000 genomes EUR cohort) all SNPs that have MAF $ > 1\%$ and use these to compute pairwise LD. The pipeline pairs each SNP with missing $p$-values to the SNP with maximum pairwise $r^2$, ${r^2}_{max}$, if that ${r^2}_{max} > 0.6$, and impute the missing $p$-value as that at the paired SNP. SNPs with missing data or without a pair above threshold are discarded as are SNPs that are included in the study but don’t map to the reference genotype set. . 
+There was a high degree of variation in the coverage of GWAS summary statistics obtained, some studies contained information on approximately $5 \times 10^5$ variants where as others were imputed to 1000 genome reference genotype set and contained in excess of $7 \times 10^6$ variants. Imputation can be used to compute approximate association statistics for missing variants however it requires access to underlying genotype data which in this case was unavailable for most traits. Methods exist for imputing summary statistics in the absence of genotyping data such as \textit{GCTA}~\citep{YangLeeGoddardEtAl2011} and \textit{IMPG}~\citep{Pasaniuc2014-im}, however these rely on access to odds ratio or $\beta$ coefficients and their standard errors to estimate direction of effect which are not always available. I therefore designed an alternative 'best guess' method, poor man's imputation (PMI), which requires evaluation but allows the processing of a wide range of traits for which variant coverage is heterogeneous and only univariate $p$ values are available.
+
+The pipeline I developed, approximates the $p$-value for missing SNP summary statistics for a given study using a suitable reference genotype set. Firstly the genome is split into regions based on a recombination frequency of 0.1cM using HapMap recombination rate data. For each region we retrieve from the reference genotype set (1000 genomes EUR cohort) all SNPs that have MAF $ > 1\%$ and use these to compute pairwise LD. The pipeline pairs each SNP with missing $p$-values to the SNP with maximum pairwise $r^2$, ${r^2}_{max}$, if that ${r^2}_{max} > 0.6$, and impute the missing $p$-value as that at the paired SNP. SNPs with missing data or without a pair above threshold are discarded as are SNPs that are included in the study but don’t map to the reference genotype set. 
+
 \section{Variant posterior probabilities of inclusion for 31 traits using GWAS summary statistics}
-To further increase resolution I used Wakefield’s synthesis of approximate Bayes factors~\citep{Wakefield2009}  to compute posterior probabilities for each SNP~\citep{The_Wellcome_Trust_Case_Control_Consortium2012-ad} within a 0.1 cM region using R code adapted from the \textit{coloc} package~\citep{GiambartolomeiVukcevicSchadtEtAl2014}.  
+To fine map candidate causal variants I used Wakefield’s synthesis of approximate Bayes factors (ABF)~\citep{Wakefield2009} and using the method described in \citet{The_Wellcome_Trust_Case_Control_Consortium2012-ad} computed posterior probabilities for each SNP within 0.1 cM regions, using R code adapted from the \textit{coloc} package~\citep{GiambartolomeiVukcevicSchadtEtAl2014}.  
 
-\begin{equation}
-	ABF =  \sqrt{1 - r} \times \exp{[\frac{Z^{2}}{2} \times r]}
-\end{equation}
-
-Here $Z= \frac{\hat{\beta}}{\sqrt{V}}$ and $r$ is a shrinkage factor which is the ratio of the prior variance to the total variance such that $r = \frac{W}{V + W}$. This means that for a SNP where we have only a univariate $p$-value we can estimate $Z$ using an inverse normal cumulative distribution function, $V$ is approximated using the MAF and study sample size. For an estimate of the standard deviation of a normal prior $\sqrt{W}$ I used the values of 0.15 for quantitative traits and 0.2 for case/control studies as defined in ~\citep{GiambartolomeiVukcevicSchadtEtAl2014}.  
-
-Given the ABF for all SNPs in a given 0.1cM block we can estimate the posterior probability that a SNP $i$  is causal using the following.
-% add equation here with an explanation
-
-\begin{equation}
-	P(SNP_{i} causal | Data) = \frac{BF_{i}\pi_{i}}{1 + \sum_{i=1} BF_{i}\pi_{i}}
-\end{equation}
-
-We used a prior ($\pi_{i}$) of $10^{-4}$ which means that we expect 1 in 10,000 SNPs to be causal for a trait. This framework assumes a model where either no SNPs are causal within a region or that exactly one SNP is causal. We masked the MHC region (GRCh37:chr6:25-35Mb) from all downstream analysis due to its extended LD and known strong and complex association with autoimmune diseases
+I set the value of prior of the $i^\text{th}$ variant being causal ($\pi_{i}$) to that from \citet{GiambartolomeiVukcevicSchadtEtAl2014}, $10^{-4}$, which means that we expect 1 in 10,000 SNPs to be causal for a trait. This framework assumes a model where either no SNPs are causal within a region or that exactly one SNP is causal. We masked the MHC region (GRCh37:chr6:25-35Mb) from all downstream analysis due to its extended LD and known strong and complex association with autoimmune diseases
 
 \section{Variant posterior probabilities of inclusion using ImmunoChip summary statistics}
 
-Focusing on Autoimmune traits,  I downloaded  ImmunoChip summary statistics for 6 traits from \url{http://www.immunobase.org} carrying out QC as previously described. The ImmunoChip is a targeted genotyping platform for dense coverage of approximately 180 regions with robust demonstration of association with one or more autoimmune traits~\citep{CortesBrown2011}. Summary statistics for ulcerative colitis, Crohn's disease and psoriasis were supplied privately by study authors. I fine mapped these traits using the PMI method previously described, but replacing 0.1cM regions with 179 regions that were densely genotyped on the ImmunoChip~\citep{Onengut-Gumuscu2015-lb}.
+Focusing on Autoimmune traits,  I downloaded  ImmunoChip summary statistics for six traits from \url{http://www.immunobase.org} carrying out QC as previously described. The ImmunoChip is a targeted genotyping platform for dense coverage of approximately 180 regions with robust demonstration of association with one or more autoimmune traits~\citep{CortesBrown2011}. Summary statistics for ulcerative colitis, Crohn's disease and psoriasis were supplied privately by study authors. I fine mapped these traits using the PMI method previously described, but replacing 0.1cM regions with the 179 regions (median size 227Kb with an inter quartiile range of between 126Kb and 392Kb) that were densely genotyped on the ImmunoChip~\citep{Onengut-Gumuscu2015-lb}. 
 
-\section{Variant posterior probabilities of inclusion using full genotyping data}
+To evaluate my PMI approach I used a set of marginal posterior probabilities of inclusion across fours diseases(autoimmune thyroid disease, celiac disease , rheumatoid arthritis and type 1 diabetes)  generated by Chris Wallace for which we had access for full genotyping data from ImmunoChip using a stochastic search method that allows for multiple causal variants within a region~\citep{WallaceCutlerPontikosEtAl2015}. I incorporated these into further analysis on the assumption that full gentotyping data and imputation would provide more accurate posterior probabilities.
 
-For four diseases (autoimmune thyroid disease, celiac disease , rheumatoid arthritis and type 1 diabetes) we had access to full genotyping data from ImmunoChip. Chris Wallace carried out formal imputation to 1000 genomes project EUR using IMPUTE2 and fine mapped causal variants in each of the 179 regions where p$<$0.0001 was observed using a stochastic search method that allows for multiple causal variants within a region~\citep{WallaceCutlerPontikosEtAl2015}. 
+%\section{Variant posterior probabilities of inclusion using full genotyping data}
+
+%For four diseases (autoimmune thyroid disease, celiac disease , rheumatoid arthritis and type 1 diabetes) we had access to full genotyping data from ImmunoChip. Chris Wallace carried out formal imputation to 1000 genomes project EUR using IMPUTE2 and fine mapped causal variants in each of the 179 regions where p$<$0.0001 was observed using a stochastic search method that allows for multiple causal variants within a region~\citep{WallaceCutlerPontikosEtAl2015}. 
 
 \section{blockshifter - A competitive test for associated variant enrichment in PCHiC interaction maps}
 I developed a method based on ideas implemented in \textit{GOSHIFTER}~\citep{Trynka2015-wz} to examine the enrichment of GWAS signals in the promoter interacting regions (PIR) in order to overcome linkage disequilibrium (LD) and interaction fragment correlation. \textit{blockshifter}  implements a competitive test of enrichment between a test set of PIRs compared to a control set. Firstly the coordinates of the PIRs in the union of test and control sets are retrieved, and PIRs with no GWAS signal overlap, or that are found in both test or control set are discarded. For the remaining PIRs we store the number and sum of overlapping GWAS posterior probabilities and these are used to compute $\delta$, the difference in the means between the test and control set . Due to correlation between GWAS signals and between PIRs the variance of $\delta$ is inflated we thus compute it empirically using permutation.  Runs of one or more PIRs (separated by at most one \textit{Hind}III fragment) are combined into ‘blocks’, that are labeled unmixed (either test or control PIRs) or mixed (block contains both test and control PIRs).  Unmixed blocks are permuted in a standard fashion by reassigning either test or control labels randomly taking into account the number of blocks in the observed sets. Mixed blocks are permuted by effectively circularising each block and rotating the labels (figure\ref{fig:blockshifter}). We then randomly sample from each these precomputed block permutations $n$ times so that the proportion of underlying PIRs labels is the same as the observed set and use this to compute the set of $\delta_{null}$. We use $\delta_{null}$ to compute an empirical $Z$-score:
@@ -311,8 +307,27 @@ To check whether the list of prioritised genes corresponded to existing biologic
 \label{fig:gfm_vs_pmi_gs}
 \end{figure}
 
+\section{Comparison of COGS with TAD bounday prioritisation}
+\begin{figure}[h]
+\centering
+	 \begin{subfigure}{\textwidth}
+		\includegraphics[width=\linewidth]{dot.pdf}
+		\caption{}\label{fig:fig_a}
+	\end{subfigure}
+	\hspace{1cm}
+	\begin{subfigure}{0.7\textwidth}
+		\includegraphics[width=\linewidth]{dist_boxplot.pdf}
+		\caption{}\label{fig:fig_b}
+	\end{subfigure}
+\begin{minipage}[t]{0.7\textwidth}
+	\caption{Comparison of PCHi-C COGS scores and Hi-C derived TAD scores, using 7 Cell types (Erythroblasts, Macrophages, Monocytes, Naive B cells, Naive CD4$^{+}$ T cells, Naive CD8$^{+}$ T cells and Neutrophils) using rheumatoid arthritis GWAS data from Okada et al. 
+	(\subref{fig:fig_a}) Comparison of scores between the two methods across a total of 15,355 protein coding genes with sufficient coverage, a line of equivalence is marked in red, counts represent the number of genes in each quadrant. (\subref{fig:fig_b}) box plot showing the distribution of distances between baits and TAD boundaries for significant (score $>$ 0.5)  genes. 'Both' indicates that gene was significant using TAD and COGS methods.}
+\end{minipage}
+\label{fig:blockshifter}
+\end{figure}
+
 \section{Prioritised gene overlap with eQTLs}
-In collaboration with Oliver Stegle and Roman Kretzhuber, using SLE~\citep{Bentham2015-di} and rheumatoid arthritis~\citep{Okada2014-um} data sets, for which full imputed summary statistics were available. we performed COGS gene prioritisation and looked to see if there was evidence for overlap with relevant tissue eQTLs~\citep{FairfaxMakinoRadhakrishnanEtAl2012}.  Out of 456 genes that were prioritised for both traits 136 had eQTLs  of which four genes (\textit{BLK},\textit{RASGRP1}, \textit{SUOX}, and \textit{GIN1}) showed evidence for possible co-localization in RA and two genes (\textit{BLK} and \textit{SLC15A4}) in SLE. Additionally the genes prioritised for RA included 5/9 candidates (\textit{C8Orf13},\textit{BLK},\textit{TRAF1}, \textit{FADS2} and \textit{SYNGR1}) that were identified in a recent study~\citep{ZhuZhangHuEtAl2016} that combined whole blood eQTLs with the same RA GWAS data by Mendelian randomisation. The relatively large number of GWAS prioritised genes without eQTL support  agrees with previous reports of limited overlap of disease variants with eQTLs~\citep{Guo2015-ka,HuangChenEsparzaEtAl2015}. One reason for this observation might be that the causal variant functions in a specific tissue context and thus it's eQTL is not observable in available eQTL datasets. The implication of this is that regulatory annotations that might be used to augment fine mapping methods are similarly incomplete. Indeed a recent study fine mapping IBD causal variants found that 21 variants with extremely high probability ($>$ 95$\%$) to be causal did not overlap any functional annotations, drawing attention to our lack of knowledge of genomic function~\citep{Huang2015-ug}.
+In collaboration with Oliver Stegle and Roman Kretzhuber, using SLE~\citep{Bentham2015-di} and rheumatoid arthritis~\citep{Okada2014-um} data sets, for which full imputed summary statistics were available. we performed COGS gene prioritisation and looked to see if there was evidence for overlap with relevant tissue eQTLs~\citep{FairfaxMakinoRadhakrishnanEtAl2012}.  Out of 456 genes that were prioritised for both traits 136 had eQTLs  of which four genes (\textit{BLK},\textit{RASGRP1}, \textit{SUOX}, and \textit{GIN1}) showed evidence for possible co-localization in RA and two genes (\textit{BLK} and \textit{SLC15A4}) in SLE. Additionally the genes prioritised for RA included 5/9 candidates (\textit{C8Orf13},\textit{BLK},\textit{TRAF1}, \textit{FADS2} and \textit{SYNGR1}) that were identified in a recent study~\citep{ZhuZhangHuEtAl2016} that combined whole blood eQTLs with the same RA GWAS data by Mendelian randomisation. The relatively large number of GWAS prioritised genes without eQTL support  agrees with previous reports of limited overlap of disease variants with eQTLs~\citep{Guo2015-ka,HuangChenEsparzaEtAl2015}. One reason for this observation might be that the causal variant functions in a specific tissue context and thus it's eQTL is not observable in available eQTL datasets. The implication of this is that regulatory annotations that might be used to augment fine mapping methods are similarly incomplete. 
 
 \section{CHiCP: a genome browser for PCHiC interaction maps}
 In collaboration with Ellen Schofield, I developed a web based application, CHiCP \url{https://www.chicp.org}, to allow the visual integration of both public and private promoter capture Hi-C maps with GWAS and BLUEPRINT epigenetic data~\citep{SchofieldCarverAchuthanEtAl2016}. To do this I developed an interactive circularised display, with a search interface  for genes, variants and chromosomal coordinates. An interaction can be selected, allowing users to access a conventional browser view to see a zoomed in view of chromatin states and GWAS signals at promoter and promoter interacting regions.
