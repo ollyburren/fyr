@@ -275,8 +275,8 @@ To evaluate the effect on COGS scores of the PMI  assumption of a single causal 
 
 %Whilst components 1 and 2 are fixed for a given gene and trait the contribution of SNPs overlapping PIRs varies depending on the tissue context being examined. We developed a hierarchical heuristic method based on the Haematopoietic tree to ascertain for each target gene which was the mostly likely component and tissue context. Firstly for each gene we compute the gene score due to gene effects (components 1 + 2) and interactions (component 3) using all available tissue interactions for that gene. We use the ratio of gene effects score to interactions score in a similar manner to a Bayes factor to decide whether one is more likely. If gene effect is more likely we iterate and compare if the gene score due to coding SNPs (component 1) is more likely than for promoter SNPs (component 2). Similarly if an interaction is more likely we begin descending the Hematopoietic tree and compare interaction gene scores for sets of tissues (e.g Myeloid vs Lymphoid). If at any stage the algorithm is unable to choose it stops and return the previous set as most likely, otherwise it continues until a single tissue/set is chosen. In this way we can prioritize genes based on the overall score and label as to a likely mechanism for candidate causal variants.
 
-%\section{Reactome Pathway Analysis}
-%Using modified R code developed by Mikhail Spivakov, for each trait I selected all protein coding genes having an overall gene score above 0.5. I converted Ensembl gene identifiers to Entrez gene indentifiers using bioMaRT~%\citep{DurinckSpellmanBirneyEtAl2009} and used ReactomePA~\citep{YuHe2016} to compute the enrichment of genes within the Reactome pathways using an FDR cutoff of 0.05, using ClusterProfiler~\citep{YuWangHanEtAl2012} to plot a bubble plot of significant results.  
+\section{Reactome Pathway Analysis}
+Using modified R code developed by Mikhail Spivakov, for each trait I selected all protein coding genes having an overall gene score above 0.5. I converted Ensembl gene identifiers to Entrez gene indentifiers using bioMaRT~\citep{DurinckSpellmanBirneyEtAl2009} and used ReactomePA~\citep{YuHe2016} to compute the enrichment of genes within the Reactome pathways using an FDR cutoff of 0.05, using ClusterProfiler~\citep{YuWangHanEtAl2012} to plot a bubble plot of significant results.  
 
 
 %\section{Tissue specific HALLMARK gene set enrichment analysis}
@@ -290,7 +290,7 @@ To evaluate the effect on COGS scores of the PMI  assumption of a single causal 
 
 \chapter{Results}
 
-\section{Comparison of PM with genotype level imputation}
+\section{Comparison of PMI with genotype level imputation}
 
 To validate performance of the PMI technique, I compared the results as imputed by PMI to those as reported by  ~\citep{Okada2014-um}. There was good agreement between PMI imputed p-values and those derived from classical imputation as reported in~\citet{Okada2014-um} ($\rho=0.9418103$, figure \ref{fig:pmi_comparison}). % need to add something about why they are sometimes different and how this relates to MAF ?
 
@@ -328,14 +328,18 @@ Enrichment of GWAS signals in tissue specific enhancers has been previously desc
 
 \section{PCHiC assisted gene prioritisation across 31 traits}
  
-Using COGS, I prioritised 2,604  unique genes (Overall COGS score $>$ 0.5) across all 31 traits examined. The prioritised genes exhibited enrichments for specific pathways in the Reactome pathway database~\citep{FabregatSidiropoulosGarapatiEtAl2016}. As expected, genes prioritised for autoimmune diseases were enriched in inflammation and immune response-related pathways, such as interleukin and T cell receptor signalling, whereas genes prioritised for platelet traits were preferentially associated with platelet production and hemostasis (figure\ref{fig:reactome}). SNPs associated with traits generally unrelated to haematopoetic cells, such as blood pressure and bone mineral density did not show enrichment for PIRs in any of the cell types analysed. 
+Using COGS, I prioritised 2,604  unique protein coding genes (Overall COGS score $>$ 0.5) across all 31 traits examined. The prioritised genes exhibited enrichments for specific pathways in the Reactome pathway database~\citep{FabregatSidiropoulosGarapatiEtAl2016} in a naive analysis. As expected, genes prioritised for autoimmune diseases were enriched in inflammation and immune response-related pathways, such as interleukin and T cell receptor signalling, whereas genes prioritised for platelet traits were preferentially associated with platelet production and hemostasis (figure\ref{fig:reactome}). SNPs associated with traits generally unrelated to haematopoetic cells, such as blood pressure and bone mineral density did not show enrichment for PIRs in any of the cell types analysed.
 %what are the stats for these prioritised genes ?
 
-%\begin{figure}[h]
-%\includegraphics[width=\textwidth]{hyper_reactome_analysis_2.pdf}
-%\caption{Bubble plot of traits with significant enrichment ($P_{adj} < 0.05$) in one or more reactome pathways  for genes with COGS score $>$ 0.5 across 31 traits. Number in parentheses below trait labels indicate the total number of genes analysed for each trait, bubble size indicates the ratio of test genes to those in the pathway, and blue to red shading corresponds to decreasing adjusted $P$-value for enrichment}
-%\label{fig:reactome}
-%\end{figure}
+\begin{landscape}
+\begin{figure}[p]
+\centering
+\includegraphics[scale=0.5]{hyper_reactome_analysis_2.pdf}
+\caption{Bubble plot of traits with significant enrichment ($P_{adj} < 0.05$) in one or more reactome pathways  for genes with COGS score $>$ 0.5 across 31 traits. Number in parentheses below trait labels indicate the total number of genes analysed for each trait, bubble size indicates the ratio of test genes to those in the pathway, and blue to red shading corresponds to decreasing adjusted $P$-value for enrichment}
+\label{fig:reactome}
+\end{figure}
+\end{landscape}
+
 
 
 %In addition, the genes prioritised for RA included 5/9 candidates (C8Orf13, BLK, TRAF1, FADS2 and SYNGR1) that were identified in a recent study (Zhu et al., 2016) combining whole-blood eQTL with RA GWAS data by Mendelian randomisation. The relatively large number of prioritized genes without eQTL support is in agreement with previous reports of limited overlap of disease variants with eQTLs (Guo et al., 2015; Huang et al., 2015). This demonstrates complementary benefits of eQTL-based and physical interaction-based prioritization approaches for prioritizing identifying candidate target genes of non-coding disease variants.
@@ -344,7 +348,6 @@ Using COGS, I prioritised 2,604  unique genes (Overall COGS score $>$ 0.5) acros
 %\section{Context specific gene priortisation across activated CD4$^{+}$ activated T cells}
 
 
-\section{Comparison of COGS with TAD bounday prioritisation}
 \begin{figure}[h]
 \centering
 	 \begin{subfigure}{0.7\textwidth}
@@ -363,11 +366,29 @@ Using COGS, I prioritised 2,604  unique genes (Overall COGS score $>$ 0.5) acros
 \label{fig:cog_prox_comparison}
 \end{figure}
 
-\section{Prioritised gene overlap with eQTLs}
-In parrallel with my GWAS focused analysis Oliver Stegle and Roman Kretzhuber had been working to consider expression quantative trail loci (eQTLs) from \citet{FairfaxMakinoRadhakrishnanEtAl2012} in the context of PCHi-C. Both eQTL and GWAS are enriched in PIRs, which prompted us to consider the overlap of COGS prioritised genes in SLE~\citep{Bentham2015-di} and rheumatoid arthritis~\citep{Okada2014-um} data sets, for which full imputed summary statistics were available. we performed COGS gene prioritisation and looked to see if there was evidence for overlap with relevant tissue eQTLs~\citep{FairfaxMakinoRadhakrishnanEtAl2012}.  Out of 456 genes that were prioritised for both traits 136 had eQTLs  of which four genes (\textit{BLK},\textit{RASGRP1}, \textit{SUOX}, and \textit{GIN1}) showed evidence for possible co-localization in RA and two genes (\textit{BLK} and \textit{SLC15A4}) in SLE. Additionally the genes prioritised for RA included 5/9 candidates (\textit{C8Orf13},\textit{BLK},\textit{TRAF1}, \textit{FADS2} and \textit{SYNGR1}) that were identified in a recent study~\citep{ZhuZhangHuEtAl2016} that combined whole blood eQTLs with the same RA GWAS data by Mendelian randomisation. The relatively large number of GWAS prioritised genes without eQTL support  agrees with previous reports of limited overlap of disease variants with eQTLs~\citep{Guo2015-ka,HuangChenEsparzaEtAl2015}. One reason for this observation might be that the causal variant functions in a specific tissue context and thus it's eQTL is not observable in available eQTL datasets. The implication of this is that regulatory annotations that might be used to augment fine mapping methods are similarly incomplete. 
+\section{Prioritised genes do not overlap significantly with eQTLs}
+In parallel with my GWAS focused analysis Oliver Stegle and Roman Kretzhuber (RK) had been working to consider expression quantative trail loci (eQTLs) from \citet{FairfaxMakinoRadhakrishnanEtAl2012} in the context of PCHi-C. Both eQTL and GWAS are enriched in PIRs, which prompted us to consider the overlap of COGS prioritised genes in SLE~\citep{Bentham2015-di} and rheumatoid arthritis~\citep{Okada2014-um} data sets, for which full imputed summary statistics were available. I performed COGS gene prioritisation and RK looked to see if there was evidence for overlap with relevant tissue eQTLs~\citep{FairfaxMakinoRadhakrishnanEtAl2012}.  Out of 456 genes that were prioritised for both traits 136 had eQTLs  of which four genes (\textit{BLK},\textit{RASGRP1}, \textit{SUOX}, and \textit{GIN1}) showed evidence for possible co-localization in RA and two genes (\textit{BLK} and \textit{SLC15A4}) in SLE. Additionally the genes prioritised for RA included 5/9 candidates (\textit{C8Orf13},\textit{BLK},\textit{TRAF1}, \textit{FADS2} and \textit{SYNGR1}) that were identified in a recent study~\citep{ZhuZhangHuEtAl2016} that combined whole blood eQTLs with the same RA GWAS data by Mendelian randomisation. The relatively large number of GWAS prioritised genes without eQTL support  agrees with previous reports of limited overlap of disease variants with eQTLs~\citep{Guo2015-ka,HuangChenEsparzaEtAl2015}. One reason for this observation might be that the causal variant functions in a specific tissue context and thus it's eQTL is not observable in available eQTL datasets. The implication of this is that regulatory annotations that might be used to augment fine mapping methods are similarly incomplete. 
 
 \section{COGS prioritisation qualitatively performs better than TAD and distance based scores}
 For all eight GWAS autoimmune traits, I compared protein coding genes scores, using PCHiC datasets (COGS), and comparitive scores computed using TAD and proximal methods. To summarise results across all diseases I selected the maximum score for a method for each gene. Using a score cut off of 0.5 I then categorised each gene as to whether it was prioritised in either a single, both or no methods (Figure \ref{fig:cog_prox_comparison}). In general COGS prioritised genes sets were significantly smaller than then those from the other methods. The naive proximity based score appeared to be least specific prioritising 5,731 genes in total, however it had the greatest overlap with COGS scores implying comparatively better sensitivity. For proximity based scores 83 genes were prioritised exclusively by COGS, indicating that 12\% of genes are prioritised by interactions greater than 0.5 Mb. TAD based scores 219 genes were prioritised exclusively by COGS, indicating that approximately 30\% of genes are prioritised by interactions that span TAD boundaries.  I note however that examining distance metrics between gene baits and supporting PIRs that in some cases this could be due to the imprecise definition of TAD boundaries (Figure \ref{fig:distance_distro}). Overall COGS appears to select genes not found by other methods and also appears to be more specific.
+
+\begin{figure}[h]
+\centering
+	 \begin{subfigure}{0.7\textwidth}
+		%\includegraphics[width=\linewidth]{dot.pdf}
+		\includegraphics[width=\linewidth]{prox_compare.pdf}
+		\caption{}\label{fig:fig_a}
+	\end{subfigure}
+	\hspace{1cm}
+	\begin{subfigure}{0.7\textwidth}
+		\includegraphics[width=\linewidth]{tad_compare.pdf}
+		\caption{}\label{fig:fig_b}
+	\end{subfigure}
+\begin{minipage}[t]{0.7\textwidth}
+	\caption{Comparison of autoimmune PCHi-C COGS scores and (\subref{fig:fig_a}) a proximity score from assigning variants to genes within 0.5 Mb of gene promoters (\subref{fig:fig_b}) Hi-C derived TAD scores, using 7 Cell types (Erythroblasts, Macrophages, Monocytes, Naive B cells, Naive CD4$^{+}$ T cells, Naive CD8$^{+}$ T cells and Neutrophils). Counts of genes in each quadrant are shown, grey to red colour gradient indicates gene density.}
+\end{minipage}
+\label{fig:cog_prox_comparison}
+\end{figure} 
 
 \begin{figure}[ht]
 \centering
