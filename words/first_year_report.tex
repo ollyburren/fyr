@@ -252,7 +252,7 @@ To fine map candidate causal variants I used Wakefield's synthesis of approximat
 I set the value of prior of the any variant being causal ($\pi_{i}$) to that from \citet{GiambartolomeiVukcevicSchadtEtAl2014}, $10^{-4}$, which means that we expect 1 in 10,000 SNPs to be causal for a trait. This framework assumes a model where either no SNPs are causal within a region or that exactly one SNP is causal. I masked the MHC region (GRCh37:chr6:25-35Mb) from all downstream analysis due to its extended LD and known strong and complex association with autoimmune diseases
 
 \section{Comparison of posterior probabilities between PMI and classical imputation}
-Before using PMI posterior probabilities in further analyses it was necessary to assess whether they approximated posterior probabilities derived from classical imputation. Firstly I selected all SNPs mapping to Chromosome 1 as a representative sample. To create a simulated non-imputed data set I pruned these results to contain only SNPs for which p-values were reported in ~\citet{Stahl2010-wz}. I next ran PMI on this pruned data set and using \textit{bedtools}~\citep{Quinlan2014}, merged these with actual the imputed p-values from~\citet{Okada2014-um}. I confined my comparison to those SNPs imputed by PMI, a total of 235,412 SNPs
+Before using PMI posterior probabilities in further analyses it was necessary to assess whether they approximated posterior probabilities derived from classical imputation. Firstly, I selected all SNPs from ~\citet{Okada2014-um} mapping to Chromosome 1, as a representative sample. To create a simulated non-imputed data set I pruned these results to contain only SNPs for which p-values were reported in ~\citet{Stahl2010-wz}. I next ran PMI on this pruned data set and using \textit{bedtools}~\citep{Quinlan2014}, merged these with actual the imputed p-values from~\citet{Okada2014-um}. I confined my comparison to those SNPs imputed by PMI, a total of 235,412 SNPs
 
 \
 %\section{Variant posterior probabilities of inclusion using full genotyping data}
@@ -281,7 +281,7 @@ the weighted mean of the sum of posterior probabilities between test and
 control sets can be used to compute enrichment.  However, to control for
 inflation due to correlation structure between SNPs and between
 interactions we rotate the labels of \textit{Hind}III fragments within the mixed
-superblock to generate a set test and control posterior probabilities
+superblock to generate a set of test and control posterior probabilities
 under the null. Such a strategy is not required for unmixed superblocks
 with a single label.  By sampling from these null test statistics across
 the set of mixed and unmixed superblocks (weighted so that we select
